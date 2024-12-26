@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 
@@ -12,6 +11,7 @@ class TokenType(Enum):
     COMMA = ","
     DOT = "."
     SEMICOLON = ";"
+    COLON = ":"
     PLUS = "+"
     MINUS = "-"
     STAR = "*"
@@ -27,11 +27,23 @@ class TokenType(Enum):
     LESS = "<"
     LESS_EQUAL = "<="
 
-    IDENTIFIER = ""
-    STRING = ""
-    NUMBER = ""
+    IDENTIFIER = "_IDENTIFIER"  # remove these
+    STRING = "_STRING"
+    NUMBER = "_NUMBER"
 
-    EOF = ""
+    AND = "and"
+    OR = "or"
+    CLASS = "class"
+    IF = "if"
+    ELIF = "elif"
+    ELSE = "else"
+    SELF = "self"
+    DEF = "def"
+    FOR = "for"
+    TRUE = "True"
+    FALSE = "False"
+
+    EOF = "EOF"
 
 
 class Token:
@@ -45,5 +57,8 @@ class Token:
         return f"{self.type.value} {self.lexeme} {self.literal}"
 
 
-SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ';',
+SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ';', ':',
           '+', '-', '*', '/', '=', '>', '<', '!']
+
+RESERVED = ["and", "or", "class", "if", "elif",
+            "else", "self", "def", "for", "True", "False"]

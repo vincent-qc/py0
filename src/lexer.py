@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from tokens import RESERVED, SYNTAX, Token, TokenType
+from util import error
 
 
 def is_alpha(c: str):
@@ -32,7 +33,7 @@ class Lexer:
         res = ""
         while self.peek() != delimeter:
             if self.peek() == '\n' or self.end_of_source(1):
-                self.error("Unclosed string")
+                error(self.line, "Unclosed string")
             res += self.peek()
             self.advance()
         return Token(TokenType.STRING, f"{delimeter}{res}{delimeter}", res, self.line)
@@ -99,7 +100,7 @@ class Lexer:
 
             # Error on illegal characters
             else:
-                self.error(f"Unidentified character: {cur}")
+                error(self.line, f"Unidentified character: {cur}")
 
             # Continue to next character
             self.advance()
@@ -120,9 +121,6 @@ class Lexer:
             return False
         self.pos += 1
         return True
-
-    def error(self, message: str):
-        raise RuntimeError(f"[line {self.line}]: {message}")
 
     def end_of_source(self, offset=0) -> bool:
         return self.pos + offset >= 0 and self.pos + offset >= len(self.source)

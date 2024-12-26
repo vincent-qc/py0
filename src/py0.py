@@ -1,8 +1,9 @@
 import sys
 from parser import Parser
 
-from grammar.expression import ExpressionPrinter
+from interpreter import Interpreter
 from lexer import Lexer
+from util import ExpressionPrinter
 
 
 def run(source):
@@ -10,9 +11,8 @@ def run(source):
     tokens = lexer.scan()
     parser = Parser(tokens)
     result = parser.parse()
-    print(result)
-    printer = ExpressionPrinter()
-    print(printer.visit_binary(result))
+    interpreter = Interpreter()
+    interpreter.interpret(result)
 
 
 # class Py0:

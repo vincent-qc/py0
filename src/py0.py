@@ -1,18 +1,17 @@
 import sys
-from parser import Parser
+from parser.parser import Parser
 
-from interpreter import Interpreter
-from lexer import Lexer
-from util import ExpressionPrinter
+from interpreter.interpreter import Interpreter
+from lexer.lexer import Lexer
 
 
 def run(source):
     lexer = Lexer(source)
     tokens = lexer.scan()
     parser = Parser(tokens)
-    result = parser.parse()
+    statements = parser.parse()
     interpreter = Interpreter()
-    interpreter.interpret(result)
+    interpreter.interpret(statements)
 
 
 # class Py0:

@@ -1,13 +1,16 @@
 from abc import ABC, abstractmethod
+from parser.grammar.expression import (
+    Binary,
+    Grouping,
+    Literal,
+    Statement,
+    Unary,
+    Variable,
+)
+from parser.grammar.statements import ExpressionStatement
 
-from grammar.expression import Binary, Grouping, Literal, Unary
 
-
-def error(self, line: int, message: str):
-    raise RuntimeError(f"[line {line}]: {message}")
-
-
-class Visitor(ABC):
+class ExpressionVisitor(ABC):
     @abstractmethod
     def visit_binary(self, binary: Binary):
         pass
@@ -24,8 +27,21 @@ class Visitor(ABC):
     def visit_unary(self, unary: Unary):
         pass
 
+    @abstractmethod
+    def visit_variable(self, variable: Variable):
+        pass
 
-class ExpressionPrinter(Visitor):
+
+class StatementVisitor(ABC):
+    @abstractmethod
+    def visit_expression_statement(self, experession_stmt: ExpressionStatement):
+        pass
+
+    def visit_var(self, var: ExpressionStatement):
+        pass
+
+
+class ExpressionPrinter(ExpressionVisitor):
     def visit_binary(self, binary: Binary):
         return f"({binary.left.accept(self)} {binary.op.lexeme} {binary.right.accept(self)})"
 

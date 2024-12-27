@@ -1,8 +1,9 @@
-from typing import List, Optional
+from parser.grammar.statements import ExpressionStatement, Statement
+from typing import List
 
 from grammar.expression import Binary, Expression, Grouping, Literal, Unary
-from tokens import SYNCHRONIZATION, Token, TokenType
-from util import error
+from lexer.tokens import SYNCHRONIZATION, Token, TokenType
+from util.errors import error
 
 
 class Parser():
@@ -10,11 +11,11 @@ class Parser():
         self.tokens = tokens
         self.index = 0
 
-    def parse(self) -> Optional[Expression]:
-        try:
-            return self.expression()
-        except Exception:
-            return
+    def parse(self) -> List[Statement]:
+        statements = []
+        while not self.end_of_tokens():
+            statements.append(self.statement())
+        return statements
 
     def peek(self):
         return self.tokens[self.index]
@@ -30,7 +31,18 @@ class Parser():
         self.index += 1
         return token
 
-    def expression(self):
+    def statement(self) -> Statement:
+        return self.expression_statement()
+
+    def expression_statement(self) -> Statement:
+        expr = self.expression()
+        if not self.match(TokenType.SEMICOLON):
+            error(self.peek().line, "Expected semicolon")
+        else:
+            self.consume()  # get rid of semicolon
+        return ExpressionStatement(expr)
+
+    def expression(self) -> Expression:
         return self.equality()
 
     def equality(self) -> Expression:
@@ -91,7 +103,8 @@ class Parser():
             expr = self.expression()
             if not self.match(TokenType.RIGHT_PAREN):
                 error(left_paren.line, "Unclosed parentheses")
-            self.consume()  # get rid of right parenthesis
+            else:
+                self.consume()  # get rid of right parenthesis
             return Grouping(expr)
 
         raise RuntimeError("Expected expression.")

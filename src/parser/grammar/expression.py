@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from tokens import Token
+from lexer.tokens import Token
 
 
 class Expression(ABC):
@@ -42,3 +42,11 @@ class Unary(Expression):
 
     def accept(self, visitor):
         return visitor.visit_unary(self)
+
+
+class Variable(Expression):
+    def __init__(self, name: Token):
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visit_variable()

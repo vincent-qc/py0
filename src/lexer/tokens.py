@@ -16,6 +16,7 @@ class TokenType(Enum):
     MINUS = "-"
     STAR = "*"
     SLASH = "/"
+    MOD = "%"
     HASHTAG = "#"
 
     EQUAL = "="
@@ -61,7 +62,7 @@ class Token:
 
 
 SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ';', ':',
-          '+', '-', '*', '/', '=', '>', '<', '!']
+          '+', '-', '*', '/', '%', '=', '>', '<', '!']
 
 RESERVED = ["and", "or", "class", "if", "elif",
             "else", "self", "def", "while", "for", "return", "True", "False", "None"]

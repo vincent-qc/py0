@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from tokens import RESERVED, SYNTAX, Token, TokenType
-from util import error
+from util.errors import error
 
 
 def is_alpha(c: str):

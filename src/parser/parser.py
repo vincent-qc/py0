@@ -7,7 +7,7 @@ from parser.grammar.expression import (
     Unary,
     Variable,
 )
-from parser.grammar.statements import ExpressionStatement, Statement, Var
+from parser.grammar.statements import Block, ExpressionStatement, Statement, Var
 from typing import List
 
 from lexer.tokens import SYNCHRONIZATION, Token, TokenType
@@ -65,7 +65,17 @@ class Parser():
         return Var(name, initalizer)
 
     def statement(self) -> Statement:
+        if self.match(TokenType.LEFT_BRACE):
+            return self.block()
         return self.expression_statement()
+
+    def block(self) -> Statement:
+        self.consume()  # get rid of left brace
+        statements = []
+        while not self.end_of_tokens() and not self.match(TokenType.RIGHT_BRACE):
+            statements.append(self.decleration())
+        self.expect(TokenType.RIGHT_BRACE, "Unclosed brace")
+        return Block(statements)
 
     def expression_statement(self) -> Statement:
         expr = self.expression()
@@ -79,7 +89,7 @@ class Parser():
         expr = self.equality()
         if self.match(TokenType.EQUAL):
             self.consume()  # get rid of equals
-            value = self.assignment()
+            value = self.equality()  # a = b = 0 should not be legal
             if isinstance(expr, Variable):
                 name = expr.name
                 return Assignment(name, value)

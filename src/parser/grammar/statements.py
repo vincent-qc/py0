@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from parser.grammar.expression import Expression
+from typing import List
 
 from lexer.tokens import Token
 
@@ -25,3 +26,11 @@ class Var(Statement):
 
     def accept(self, visitor):
         return visitor.visit_var(self)
+
+
+class Block(Statement):
+    def __init__(self, statements: List[Statement]):
+        self.statements = statements
+
+    def accept(self, visitor):
+        return visitor.visit_block(self)

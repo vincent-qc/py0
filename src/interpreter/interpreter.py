@@ -81,6 +81,14 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         value = self.eval(var.initializer)
         self.env.define(var.name, value)
 
+    def visit_block(self, block):
+        new_env = Environment(self.env)
+        old_env = self.env
+        self.env = new_env
+        for statement in block.statements:
+            self.exec(statement)
+        self.env = old_env
+
     def eval(self, expr: Expression) -> object:
         return expr.accept(self)
 

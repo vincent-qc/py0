@@ -7,7 +7,7 @@ from parser.grammar.expression import (
     Unary,
     Variable,
 )
-from parser.grammar.statements import ExpressionStatement, Var
+from parser.grammar.statements import Block, ExpressionStatement, Var
 
 
 class ExpressionVisitor(ABC):
@@ -42,6 +42,9 @@ class StatementVisitor(ABC):
         pass
 
     def visit_var(self, var: Var):
+        pass
+
+    def visit_block(self, block: Block):
         pass
 
 

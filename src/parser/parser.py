@@ -1,7 +1,14 @@
-from parser.grammar.statements import ExpressionStatement, Statement
+from parser.grammar.expression import (
+    Binary,
+    Expression,
+    Grouping,
+    Literal,
+    Unary,
+    Variable,
+)
+from parser.grammar.statements import ExpressionStatement, Statement, Var
 from typing import List
 
-from grammar.expression import Binary, Expression, Grouping, Literal, Unary
 from lexer.tokens import SYNCHRONIZATION, Token, TokenType
 from util.errors import error
 
@@ -14,11 +21,16 @@ class Parser():
     def parse(self) -> List[Statement]:
         statements = []
         while not self.end_of_tokens():
-            statements.append(self.statement())
+            statements.append(self.decleration())
         return statements
 
     def peek(self):
         return self.tokens[self.index]
+
+    def consume(self) -> Token:
+        token = self.peek()
+        self.index += 1
+        return token
 
     def match(self, *args: TokenType) -> bool:
         for arg in args:
@@ -26,20 +38,37 @@ class Parser():
                 return True
         return False
 
-    def consume(self) -> Token:
-        token = self.peek()
-        self.index += 1
-        return token
+    def expect(self, type: TokenType, message: str) -> Token:
+        if not self.match(type):
+            raise RuntimeError(message)
+        else:
+            return self.consume()
+
+    # Syntax Rules
+
+    def decleration(self) -> Statement:
+        try:
+            # no reserved word, so proceed to variable decleration
+            if self.match(TokenType.IDENTIFIER):
+                return self.var_decleration()
+            return self.statement()
+        except RuntimeError:
+            print("SYNCHRONIZING")
+            self.synchronize()
+
+    def var_decleration(self) -> Statement:
+        name = self.consume()
+        self.expect(TokenType.EQUAL, "Variable not declared.")
+        initalizer = self.expression()
+        self.expect(TokenType.SEMICOLON, "Expected semicolon.")
+        return Var(name, initalizer)
 
     def statement(self) -> Statement:
         return self.expression_statement()
 
     def expression_statement(self) -> Statement:
         expr = self.expression()
-        if not self.match(TokenType.SEMICOLON):
-            error(self.peek().line, "Expected semicolon")
-        else:
-            self.consume()  # get rid of semicolon
+        self.expect(TokenType.SEMICOLON, "Expected semicolon.")
         return ExpressionStatement(expr)
 
     def expression(self) -> Expression:
@@ -98,13 +127,13 @@ class Parser():
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.consume().literal)
 
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.consume())
+
         if self.match(TokenType.LEFT_PAREN):
-            left_paren = self.consume()
+            self.consume()  # get rid of left parenthesis
             expr = self.expression()
-            if not self.match(TokenType.RIGHT_PAREN):
-                error(left_paren.line, "Unclosed parentheses")
-            else:
-                self.consume()  # get rid of right parenthesis
+            self.expect(TokenType.RIGHT_PAREN, "Unclosed parenthesis.")
             return Grouping(expr)
 
         raise RuntimeError("Expected expression.")

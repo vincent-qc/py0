@@ -2,12 +2,11 @@ from abc import ABC, abstractmethod
 from parser.grammar.expression import Expression
 
 from lexer.tokens import Token
-from util.visitor import StatementVisitor
 
 
 class Statement(ABC):
     @abstractmethod
-    def accept(self, visitor: StatementVisitor):
+    def accept(self, visitor):
         pass
 
 
@@ -25,4 +24,4 @@ class Var(Statement):
         self.initializer = initializer
 
     def accept(self, visitor):
-        return visitor.visit_var()
+        return visitor.visit_var(self)

@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List
 
-from tokens import RESERVED, SYNTAX, Token, TokenType
+from lexer.tokens import RESERVED, SYNTAX, Token, TokenType
 from util.errors import error
 
 
@@ -17,13 +17,18 @@ class Lexer:
 
     def lex_syntax(self):
         cur = self.peek()
-        if cur == '=' and self.match('='):
+        next = self.peek(1)
+        if cur == '=' and next == '=':
+            self.advance()
             return Token(TokenType.EQUAL_EQUAL, cur, None, self.line)
-        if cur == '>' and self.match('='):
+        if cur == '>' and next == '=':
+            self.advance()
             return Token(TokenType.GREATER_EQUAL, cur, None, self.line)
-        if cur == '<' and self.match('='):
+        if cur == '<' and next == '=':
+            self.advance()
             return Token(TokenType.LESS_EQUAL, cur, None, self.line)
-        if cur == '!' and self.match('='):
+        if cur == '!' and next == '=':
+            self.advance()
             return Token(TokenType.BANG_EQUAL, cur, None, self.line)
         return Token(TokenType(cur), cur, None, self.line)
 
@@ -115,12 +120,6 @@ class Lexer:
 
     def advance(self, offset=1):
         self.pos += offset
-
-    def match(self, match: str) -> bool:
-        if self.end_of_source() or self.source[self.pos] != match:
-            return False
-        self.pos += 1
-        return True
 
     def end_of_source(self, offset=0) -> bool:
         return self.pos + offset >= 0 and self.pos + offset >= len(self.source)

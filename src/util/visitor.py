@@ -3,11 +3,10 @@ from parser.grammar.expression import (
     Binary,
     Grouping,
     Literal,
-    Statement,
     Unary,
     Variable,
 )
-from parser.grammar.statements import ExpressionStatement
+from parser.grammar.statements import ExpressionStatement, Var
 
 
 class ExpressionVisitor(ABC):
@@ -37,7 +36,7 @@ class StatementVisitor(ABC):
     def visit_expression_statement(self, experession_stmt: ExpressionStatement):
         pass
 
-    def visit_var(self, var: ExpressionStatement):
+    def visit_var(self, var: Var):
         pass
 
 

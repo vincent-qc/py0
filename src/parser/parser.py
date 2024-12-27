@@ -1,4 +1,5 @@
 from parser.grammar.expression import (
+    Assignment,
     Binary,
     Expression,
     Grouping,
@@ -72,7 +73,18 @@ class Parser():
         return ExpressionStatement(expr)
 
     def expression(self) -> Expression:
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self) -> Expression:
+        expr = self.equality()
+        if self.match(TokenType.EQUAL):
+            self.consume()  # get rid of equals
+            value = self.assignment()
+            if isinstance(expr, Variable):
+                name = expr.name
+                return Assignment(name, value)
+            raise RuntimeError("Invalid assignment target")
+        return expr
 
     def equality(self) -> Expression:
         expr = self.comparison()

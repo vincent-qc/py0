@@ -1,5 +1,6 @@
 from parser.environment import Environment
 from parser.grammar.expression import (
+    Assignment,
     Binary,
     Expression,
     Grouping,
@@ -66,15 +67,19 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         elif op.type == TokenType.BANG_EQUAL:
             return left != right
 
+    def visit_assignment(self, assignment: Assignment):
+        value = self.eval(assignment.value)
+        self.env.assign(assignment.name, value)
+
     def visit_variable(self, variable: Variable):
-        return self.env.retrive(variable.name.lexeme)
+        return self.env.retrive(variable.name)
 
     def visit_expression_statement(self, expression_stmt: ExpressionStatement):
         self.exec(expression_stmt)
 
     def visit_var(self, var: Var):
         value = self.eval(var.initializer)
-        self.env.define(var.name.lexeme, value)
+        self.env.define(var.name, value)
 
     def eval(self, expr: Expression) -> object:
         return expr.accept(self)

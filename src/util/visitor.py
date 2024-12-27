@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from parser.grammar.expression import (
+    Assignment,
     Binary,
     Grouping,
     Literal,
@@ -24,6 +25,10 @@ class ExpressionVisitor(ABC):
 
     @abstractmethod
     def visit_unary(self, unary: Unary):
+        pass
+
+    @abstractmethod
+    def visit_assignment(self, assignment: Assignment):
         pass
 
     @abstractmethod

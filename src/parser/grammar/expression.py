@@ -44,6 +44,12 @@ class Unary(Expression):
         return visitor.visit_unary(self)
 
 
+class Assignment(Expression):
+    def __init__(self, name: Token, value: Expression):
+        self.name = name
+        self.value = value
+
+
 class Variable(Expression):
     def __init__(self, name: Token):
         self.name = name

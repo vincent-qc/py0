@@ -4,15 +4,26 @@ from parser.grammar.expression import (
     Binary,
     Grouping,
     Literal,
+    Logical,
     Unary,
     Variable,
 )
-from parser.grammar.statements import Block, ExpressionStatement, Var
+from parser.grammar.statements import (
+    Block,
+    ExpressionStatement,
+    IfStatement,
+    Var,
+    WhileStatement,
+)
 
 
 class ExpressionVisitor(ABC):
     @abstractmethod
     def visit_binary(self, binary: Binary):
+        pass
+
+    @abstractmethod
+    def visit_logical(self, logical: Logical):
         pass
 
     @abstractmethod
@@ -41,10 +52,20 @@ class StatementVisitor(ABC):
     def visit_expression_statement(self, experession_stmt: ExpressionStatement):
         pass
 
+    @abstractmethod
     def visit_var(self, var: Var):
         pass
 
+    @abstractmethod
     def visit_block(self, block: Block):
+        pass
+
+    @abstractmethod
+    def visit_if_statement(self, if_stmt: IfStatement):
+        pass
+
+    @abstractmethod
+    def visit_while_statement(self, while_stmt: WhileStatement):
         pass
 
 

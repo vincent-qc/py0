@@ -4,10 +4,17 @@ from parser.grammar.expression import (
     Expression,
     Grouping,
     Literal,
+    Logical,
     Unary,
     Variable,
 )
-from parser.grammar.statements import Block, ExpressionStatement, Statement, Var
+from parser.grammar.statements import (
+    Block,
+    ExpressionStatement,
+    IfStatement,
+    Statement,
+    Var,
+)
 from typing import List
 
 from lexer.tokens import SYNCHRONIZATION, Token, TokenType
@@ -67,15 +74,29 @@ class Parser():
     def statement(self) -> Statement:
         if self.match(TokenType.LEFT_BRACE):
             return self.block()
+        if self.match(TokenType.IF):
+            return self.if_statement()
         return self.expression_statement()
 
     def block(self) -> Statement:
-        self.consume()  # get rid of left brace
+        self.expect(TokenType.LEFT_BRACE, "Expected left brace.")
         statements = []
         while not self.end_of_tokens() and not self.match(TokenType.RIGHT_BRACE):
             statements.append(self.decleration())
-        self.expect(TokenType.RIGHT_BRACE, "Unclosed brace")
+        self.expect(TokenType.RIGHT_BRACE, "Unclosed brace.")
         return Block(statements)
+
+    def if_statement(self) -> Statement:
+        self.consume()  # get rid of if
+        condition = self.equality()
+        then_stmt = self.block()
+        else_stmt = None
+        if self.match(TokenType.ELIF):
+            else_stmt = self.if_statement()
+        elif self.match(TokenType.ELSE):
+            self.consume()  # get rid of else
+            else_stmt = self.block()
+        return IfStatement(condition, then_stmt, else_stmt)
 
     def expression_statement(self) -> Statement:
         expr = self.expression()
@@ -86,7 +107,7 @@ class Parser():
         return self.assignment()
 
     def assignment(self) -> Expression:
-        expr = self.equality()
+        expr = self.logical_or()
         if self.match(TokenType.EQUAL):
             self.consume()  # get rid of equals
             value = self.equality()  # a = b = 0 should not be legal
@@ -94,6 +115,22 @@ class Parser():
                 name = expr.name
                 return Assignment(name, value)
             raise RuntimeError("Invalid assignment target")
+        return expr
+
+    def logical_or(self) -> Expression:
+        expr = self.logical_and()
+        if self.match(TokenType.OR):
+            op = self.consume()
+            right = self.logical_and()
+            expr = Logical(expr, op, right)
+        return expr
+
+    def logical_and(self) -> Expression:
+        expr = self.equality()
+        if self.match(TokenType.AND):
+            op = self.consume()
+            right = self.logical_and()
+            expr = Logical(expr, op, right)
         return expr
 
     def equality(self) -> Expression:

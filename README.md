@@ -106,7 +106,20 @@ while True:
 
 
 ### Tags
+For the sake of... writing good code, once a variable is declared, its type cannot be changed. Similar to C0, variables are immediately "tagged" with their respective type upon decleration.
 
+Therefore, unlike python, this is not valid code.
+```py.
+qux = "str" # type is defined as str
+quz = 1 # cannot assign into str
+```
+
+As a result, in order to prove safety, a function to check if a variable is defined to be a certain type, `hastag`, is provided.
+```py
+foo_bar = "baz"
+print(hastag(foo_bar, str)) # True
+print(hastag(foo_bar, int)) # False
+```
 
 ### Functions
 `TODO`

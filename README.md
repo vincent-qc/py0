@@ -69,5 +69,43 @@ for var in iterator:
   print(var)
 ```
 
+### Contracts
+To ensure code safety and correctness can be proved, contracts are introduced. In particular, preconditions, postconditions, and loop invariants can be direct implemented
+
+Preconditions can be declared following a function decleration as such. If a precondition is not met, Py0 immediately exits execution.
+```py
+requires bar is not None
+def foo(bar):
+  # implementation
+```
+
+Similarily, postconditions can be implemented as follows. `\res` is used to denote the value that is returned from the function
+```py
+ensures \res is not None
+def baz():
+  var = None
+  var = "not none"
+  return var
+```
+
+Finally, loop invariants can be declared both before `for` loops and `while` loops.
+```py
+loop_invariant x >= 0
+for x in range(10):
+  print(x)
+```
+or
+```
+var = 1
+
+loop_invariant var >= 1
+while True:
+  var = var * 2
+```
+
+
+### Tags
+
+
 ### Functions
 `TODO`

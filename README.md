@@ -96,7 +96,7 @@ for x in range(10):
   print(x)
 ```
 or
-```
+```py
 var = 1
 
 loop_invariant var >= 1

@@ -11,9 +11,11 @@ from parser.grammar.expression import (
 from parser.grammar.statements import (
     Block,
     ExpressionStatement,
+    ForStatement,
     IfStatement,
     Statement,
     Var,
+    WhileStatement,
 )
 from typing import List
 
@@ -88,7 +90,7 @@ class Parser():
 
     def if_statement(self) -> Statement:
         self.consume()  # get rid of if
-        condition = self.equality()
+        condition = self.logical_or()
         then_stmt = self.block()
         else_stmt = None
         if self.match(TokenType.ELIF):
@@ -97,6 +99,21 @@ class Parser():
             self.consume()  # get rid of else
             else_stmt = self.block()
         return IfStatement(condition, then_stmt, else_stmt)
+
+    def while_statement(self) -> Statement:
+        self.consume()  # get rid of while
+        condition = self.logical_or()
+        body = self.block()
+        return WhileStatement(condition, body)
+
+    def for_statement(self) -> Statement:
+        self.consume  # get rid of for
+        name = self.consume()
+        self.expect(TokenType.IN)
+        iterator = self.expression()  # iterator
+        body = self.block()
+
+        return ForStatement(name, iterator, body)
 
     def expression_statement(self) -> Statement:
         expr = self.expression()

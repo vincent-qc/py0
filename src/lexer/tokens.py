@@ -42,6 +42,7 @@ class TokenType(Enum):
     DEF = "def"
     WHILE = "while"
     FOR = "for"
+    IN = "in"
     RETURN = "return"
     TRUE = "True"
     FALSE = "False"
@@ -65,7 +66,7 @@ SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ';', ':',
           '+', '-', '*', '/', '%', '=', '>', '<', '!']
 
 RESERVED = ["and", "or", "class", "if", "elif",
-            "else", "self", "def", "while", "for", "return", "True", "False", "None"]
+            "else", "self", "def", "while", "for", "in", "return", "True", "False", "None"]
 
 SYNCHRONIZATION = [TokenType.CLASS, TokenType.DEF,
                    TokenType.FOR, TokenType.IF, TokenType.WHILE, TokenType.RETURN]

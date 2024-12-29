@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from parser.grammar.expression import Expression
-from typing import List
+from typing import Any, List
 
 from lexer.tokens import Token
 
@@ -53,3 +53,13 @@ class WhileStatement(Statement):
 
     def accept(self, visitor):
         return visitor.visit_while(self)
+
+
+class ForStatement(Statement):
+    def __init__(self, name: Token, iterator: Expression, body: Statement):
+        self.name = name
+        self.iterator = iterator
+        self.body = body
+
+    def accept(self, visitor):
+        return visitor.visit_for()

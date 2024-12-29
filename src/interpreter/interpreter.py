@@ -9,7 +9,15 @@ from parser.grammar.expression import (
     Unary,
     Variable,
 )
-from parser.grammar.statements import ExpressionStatement, IfStatement, Statement, Var
+from parser.grammar.statements import (
+    Block,
+    ExpressionStatement,
+    ForStatement,
+    IfStatement,
+    Statement,
+    Var,
+    WhileStatement,
+)
 from typing import Any, List
 
 from interpreter.typecheck import checkzero, typecheck
@@ -76,43 +84,48 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return False
         return bool(self.eval(logical.right))
 
-    def visit_assignment(self, assignment:
-        Assignment):
+    def visit_assignment(self, assignment: Assignment):
         value = self.eval(assignment.value)
         self.env.assign(assignment.name, value)
 
-    def visit_variable(self, variable:
-        Variable):
+    def visit_variable(self, variable: Variable):
         return self.env.retrive(variable.name)
 
-    def visit_expression_statement(self, expression_stmt:
-        ExpressionStatement):
+    def visit_expression_statement(self, expression_stmt: ExpressionStatement):
         self.exec(expression_stmt)
 
-    def visit_var(self, var:
-        Var):
+    def visit_var(self, var: Var):
         value = self.eval(var.initializer)
         self.env.define(var.name, value)
 
     def visit_block(self, block):
-                new_env = Environment(self.env)
-        old_env= self.env
-        self.env= new_env
+        new_env = Environment(self.env)
+        old_env = self.env
+        self.env = new_env
         for statement in block.statements:
-                        self.exec(statement)
-        self.env= old_env
+            self.exec(statement)
+        self.env = old_env
 
-    def visit_if_statement(self, if_stmt:
-        IfStatement):
+    def visit_if_statement(self, if_stmt: IfStatement):
         if bool(self.eval(if_stmt.condition)):
             self.exec(if_stmt.then_stmt)
         elif if_stmt.else_stmt is not None:
-                        self.exec(if_stmt.else_stmt)
+            self.exec(if_stmt.else_stmt)
 
-    def eval(self, expr:
-        Expression) -> object:
+    def visit_while_statement(self, while_stmt: WhileStatement):
+        while while_stmt.condition:
+            self.exec(while_stmt.body)
+
+    def visit_for_statement(self, for_stmt: ForStatement):
+        name = for_stmt.name
+        iterator = self.eval(for_stmt.iterator)
+        for item in iterator:
+            self.env.define(name, item)
+            self.exec(for_stmt.body)
+        self.env.delete(name)
+
+    def eval(self, expr: Expression) -> object:
         return expr.accept(self)
 
-    def exec(self, statement:
-        Statement):
+    def exec(self, statement: Statement):
         return statement.accept(self)

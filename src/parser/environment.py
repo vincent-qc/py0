@@ -24,3 +24,7 @@ class Environment:
         if self.enclosing is not None:
             return self.enclosing.retrive(name)
         raise RuntimeError(f"Variable {name.lexeme} not defined")
+
+    def delete(self, name: Token):
+        if name.lexeme in self.values:
+            self.values.pop(name.lexeme)

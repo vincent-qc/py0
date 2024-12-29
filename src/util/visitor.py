@@ -11,6 +11,7 @@ from parser.grammar.expression import (
 from parser.grammar.statements import (
     Block,
     ExpressionStatement,
+    ForStatement,
     IfStatement,
     Var,
     WhileStatement,
@@ -66,6 +67,10 @@ class StatementVisitor(ABC):
 
     @abstractmethod
     def visit_while_statement(self, while_stmt: WhileStatement):
+        pass
+
+    @abstractmethod
+    def visit_for_statement(self, for_stmt: ForStatement):
         pass
 
 

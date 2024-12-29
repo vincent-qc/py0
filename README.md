@@ -109,7 +109,7 @@ while True:
 For the sake of... writing good code, once a variable is declared, its type cannot be changed. Similar to C0, variables are immediately "tagged" with their respective type upon decleration.
 
 Therefore, unlike python, this is not valid code.
-```py.
+```py
 qux = "str" # type is defined as str
 quz = 1 # cannot assign into str
 ```

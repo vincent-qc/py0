@@ -28,6 +28,16 @@ class Var(Statement):
         return visitor.visit_var(self)
 
 
+class Function(Statement):
+    def __init__(self, name: Token, parameters: List[Token], body: List[Statement]):
+        self.name = name
+        self.parameters = parameters
+        self.body = body
+
+    def accept(self, visitor):
+        return visitor.visit_function(self)
+
+
 class Block(Statement):
     def __init__(self, statements: List[Statement]):
         self.statements = statements

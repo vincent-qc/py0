@@ -13,6 +13,7 @@ from parser.grammar.statements import (
     Block,
     ExpressionStatement,
     ForStatement,
+    Function,
     IfStatement,
     Var,
     WhileStatement,
@@ -63,6 +64,10 @@ class StatementVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_function(self, function: Function):
+        pass
+
+    @abstractmethod
     def visit_block(self, block: Block):
         pass
 
@@ -79,15 +84,12 @@ class StatementVisitor(ABC):
         pass
 
 
-class ExpressionPrinter(ExpressionVisitor):
-    def visit_binary(self, binary: Binary):
-        return f"({binary.left.accept(self)} {binary.op.lexeme} {binary.right.accept(self)})"
-
-    def visit_grouping(self, grouping: Grouping):
-        return f"(group {grouping.expr.accept(self)})"
-
-    def visit_literal(self, literal: Literal):
-        return str(literal.value)
-
-    def visit_unary(self, unary: Unary):
-        return f"({unary.op.lexeme} {unary.right.accept(self)})"
+# class ExpressionPrinter(ExpressionVisitor):
+#     def visit_binary(self, binary: Binary):
+#         return f"({binary.left.accept(self)} {binary.op.lexeme} {binary.right.accept(self)})"
+#     def visit_grouping(self, grouping: Grouping):
+#         return f"(group {grouping.expr.accept(self)})"
+#     def visit_literal(self, literal: Literal):
+#         return str(literal.value)
+#     def visit_unary(self, unary: Unary):
+#         return f"({unary.op.lexeme} {unary.right.accept(self)})"

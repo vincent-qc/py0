@@ -1,6 +1,7 @@
 from parser.grammar.expression import (
     Assignment,
     Binary,
+    Call,
     Expression,
     Grouping,
     Literal,
@@ -187,7 +188,19 @@ class Parser():
             op = self.consume()
             expr = self.unary()
             return Unary(op, expr)
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expression:
+        expr = self.primary()
+        while self.match(TokenType.LEFT_PAREN):
+            args = []
+            while not self.match(TokenType.RIGHT_PAREN):
+                args.append(self.expression())
+                if not self.match(TokenType.RIGHT_PAREN):
+                    self.expect(TokenType.COMMA, "Expected comma.")
+            paren = self.expect(TokenType.RIGHT_PAREN, "Unclosed parenthesis.")
+            expr = Call(expr, paren, args)
+        return expr
 
     def primary(self) -> Expression:
         if self.match(TokenType.FALSE):

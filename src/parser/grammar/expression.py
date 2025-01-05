@@ -1,11 +1,22 @@
 from abc import ABC, abstractmethod
+from typing import List
 
+from interpreter.interpreter import Interpreter
 from lexer.tokens import Token
 
 
 class Expression(ABC):
     @abstractmethod
     def accept(self, visitor):
+        pass
+
+
+class Callable(ABC):
+    @abstractmethod
+    def call(self, interpreter: Interpreter, args: List[object]) -> object:
+        pass
+
+    def arity(self):
         pass
 
 
@@ -52,6 +63,13 @@ class Unary(Expression):
 
     def accept(self, visitor):
         return visitor.visit_unary(self)
+
+
+class Call(Expression):
+    def __init__(self, callee: Expression, paren: Token, args: List[Expression]):
+        self.callee = callee
+        self.paren = paren
+        self.args = args
 
 
 class Assignment(Expression):

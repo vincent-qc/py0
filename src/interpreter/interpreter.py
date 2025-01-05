@@ -2,6 +2,8 @@ from parser.environment import Environment
 from parser.grammar.expression import (
     Assignment,
     Binary,
+    Call,
+    Callable,
     Expression,
     Grouping,
     Literal,
@@ -10,7 +12,6 @@ from parser.grammar.expression import (
     Variable,
 )
 from parser.grammar.statements import (
-    Block,
     ExpressionStatement,
     ForStatement,
     IfStatement,
@@ -18,16 +19,20 @@ from parser.grammar.statements import (
     Var,
     WhileStatement,
 )
-from typing import Any, List
+from typing import List
 
+from interpreter.natives import define_natives
 from interpreter.typecheck import checkzero, typecheck
-from lexer.tokens import Token, TokenType
+from lexer.tokens import TokenType
+from util.errors import error
 from util.visitor import ExpressionVisitor, StatementVisitor
 
 
 class Interpreter(ExpressionVisitor, StatementVisitor):
     def __init__(self):
         self.env = Environment()
+        self.globals = Environment()
+        define_natives(self.globals)
 
     def interpret(self, statements: List[Statement]):
         for statement in statements:
@@ -45,6 +50,19 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             return not bool(right)
         elif unary.op.type == TokenType.MINUS:
             return -1 * float(right)
+
+    def visit_call(self, call: Call) -> object:
+        callee = self.eval(call.callee)
+        args = []
+        for arg in call.args:
+            args.append(self.eval(arg))
+        if not isinstance(Callable, callee):
+            error(call.paren.line, "Can only invoke functions or classes")
+        func = Callable(callee)
+        if len(args) != func.arity():
+            error(call.paren.line,
+                  f"Expected {func.arity()} arguments but received {len(args)}.")
+        return func.call(self, args)
 
     def visit_binary(self, binary: Binary) -> object:
         op = binary.op

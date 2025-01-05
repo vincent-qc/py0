@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from parser.grammar.expression import (
     Assignment,
     Binary,
+    Call,
     Grouping,
     Literal,
     Logical,
@@ -37,6 +38,10 @@ class ExpressionVisitor(ABC):
 
     @abstractmethod
     def visit_unary(self, unary: Unary):
+        pass
+
+    @abstractmethod
+    def visit_call(self, call: Call):
         pass
 
     @abstractmethod

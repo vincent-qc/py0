@@ -11,15 +11,6 @@ class Expression(ABC):
         pass
 
 
-class Callable(ABC):
-    @abstractmethod
-    def call(self, interpreter: Interpreter, args: List[object]) -> object:
-        pass
-
-    def arity(self):
-        pass
-
-
 class Binary(Expression):
     def __init__(self, left: Expression, op: Token, right: Expression):
         self.left = left

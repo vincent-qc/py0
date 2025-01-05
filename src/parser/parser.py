@@ -13,6 +13,7 @@ from parser.grammar.statements import (
     Block,
     ExpressionStatement,
     ForStatement,
+    Function,
     IfStatement,
     Statement,
     Var,
@@ -59,6 +60,8 @@ class Parser():
 
     def decleration(self) -> Statement:
         try:
+            if self.match(TokenType.DEF):
+                return self.function_decleration()
             # no reserved word, so proceed to variable decleration
             if self.match(TokenType.IDENTIFIER):
                 return self.var_decleration()
@@ -66,6 +69,20 @@ class Parser():
         except RuntimeError:
             print("SYNCHRONIZING")
             self.synchronize()
+
+    def function_decleration(self) -> Statement:
+        self.consume()  # get rid of def
+        name = self.expect(TokenType.IDENTIFIER, "Expect function name.")
+        self.expect(TokenType.LEFT_PAREN, "Expect parenthesis.")
+        args = []
+        while not self.match(TokenType.RIGHT_PAREN):
+            args.append(self.expect(TokenType.IDENTIFIER,
+                        "Invalid parameter name."))
+            if not self.match(TokenType.RIGHT_PAREN):
+                self.expect(TokenType.COMMA)
+        self.expect(TokenType.RIGHT_PAREN, "Expect parenthesis.")
+        body = self.block()
+        return Function(name, args, body)
 
     def var_decleration(self) -> Statement:
         name = self.consume()

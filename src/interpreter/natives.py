@@ -1,5 +1,5 @@
 from parser.environment import Environment
-from parser.grammar.expression import Callable
+from parser.grammar.functions import Callable
 
 
 class NativePrint(Callable):
@@ -18,6 +18,6 @@ class NativeLen(Callable):
         return 1
 
 
-def define_natives(globals: Environment):
-    globals.assign("print", NativePrint())
-    globals.assign("len", NativeLen())
+def define_natives(env: Environment):
+    env.assign("print", NativePrint())
+    env.assign("len", NativeLen())

@@ -3,7 +3,6 @@ from parser.grammar.expression import (
     Assignment,
     Binary,
     Call,
-    Callable,
     Expression,
     Grouping,
     Literal,
@@ -11,6 +10,7 @@ from parser.grammar.expression import (
     Unary,
     Variable,
 )
+from parser.grammar.functions import Callable, FunctionCallable
 from parser.grammar.statements import (
     ExpressionStatement,
     ForStatement,
@@ -31,8 +31,7 @@ from util.visitor import ExpressionVisitor, StatementVisitor
 class Interpreter(ExpressionVisitor, StatementVisitor):
     def __init__(self):
         self.env = Environment()
-        self.globals = Environment()
-        define_natives(self.globals)
+        define_natives(self.env)
 
     def interpret(self, statements: List[Statement]):
         for statement in statements:
@@ -116,13 +115,17 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         value = self.eval(var.initializer)
         self.env.define(var.name, value)
 
-    def visit_block(self, block):
-        new_env = Environment(self.env)
+    def visit_block(self, block, new_env=None):
+        new_env = Environment(self.env) if new_env is None else new_env
         old_env = self.env
         self.env = new_env
         for statement in block.statements:
             self.exec(statement)
         self.env = old_env
+
+    def visit_function(self, function):
+        callable = FunctionCallable(function)
+        self.env.define(function.name.lexeme, callable)
 
     def visit_if_statement(self, if_stmt: IfStatement):
         if bool(self.eval(if_stmt.condition)):

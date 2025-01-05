@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from parser.environment import Environment
 from parser.grammar.expression import (
     Assignment,
     Binary,
@@ -18,6 +19,7 @@ from parser.grammar.statements import (
     Var,
     WhileStatement,
 )
+from typing import Optional
 
 
 class ExpressionVisitor(ABC):
@@ -68,7 +70,7 @@ class StatementVisitor(ABC):
         pass
 
     @abstractmethod
-    def visit_block(self, block: Block):
+    def visit_block(self, block: Block, new_env: Optional[Environment]):
         pass
 
     @abstractmethod

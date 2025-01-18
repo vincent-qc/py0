@@ -15,6 +15,7 @@ from parser.grammar.statements import (
     ForStatement,
     Function,
     IfStatement,
+    ReturnStatement,
     Statement,
     Var,
     WhileStatement,
@@ -22,7 +23,6 @@ from parser.grammar.statements import (
 from typing import List
 
 from lexer.tokens import SYNCHRONIZATION, Token, TokenType
-from util.errors import error
 
 
 class Parser():
@@ -36,8 +36,8 @@ class Parser():
             statements.append(self.decleration())
         return statements
 
-    def peek(self):
-        return self.tokens[self.index]
+    def peek(self, offset=0):
+        return self.tokens[self.index + offset]
 
     def consume(self) -> Token:
         token = self.peek()
@@ -63,14 +63,16 @@ class Parser():
             if self.match(TokenType.DEF):
                 return self.function_decleration()
             # no reserved word, so proceed to variable decleration
-            if self.match(TokenType.IDENTIFIER):
+            if self.match(TokenType.IDENTIFIER and self.peek(1).type == TokenType.EQUAL):
                 return self.var_decleration()
             return self.statement()
-        except RuntimeError:
+        except RuntimeError as e:
+            print(e)
             print("SYNCHRONIZING")
             self.synchronize()
 
     def function_decleration(self) -> Statement:
+        print("FFF")
         self.consume()  # get rid of def
         name = self.expect(TokenType.IDENTIFIER, "Expect function name.")
         self.expect(TokenType.LEFT_PAREN, "Expect parenthesis.")
@@ -96,6 +98,12 @@ class Parser():
             return self.block()
         if self.match(TokenType.IF):
             return self.if_statement()
+        if self.match(TokenType.WHILE):
+            return self.while_statement()
+        if self.match(TokenType.FOR):
+            return self.for_statement()
+        if self.match(TokenType.RETURN):
+            return self.return_statement()
         return self.expression_statement()
 
     def block(self) -> Statement:
@@ -132,6 +140,14 @@ class Parser():
         body = self.block()
 
         return ForStatement(name, iterator, body)
+
+    def return_statement(self) -> Statement:
+        token = self.consume()  # get rid of return
+        expr = None
+        if not self.match(TokenType.SEMICOLON):
+            expr = self.expression()
+        self.expect(TokenType.SEMICOLON, "Expected semicolon.")
+        return ReturnStatement(token, expr)
 
     def expression_statement(self) -> Statement:
         expr = self.expression()

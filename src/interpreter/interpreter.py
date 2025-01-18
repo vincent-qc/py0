@@ -10,11 +10,12 @@ from parser.grammar.expression import (
     Unary,
     Variable,
 )
-from parser.grammar.functions import Callable, FunctionCallable
+from parser.grammar.functions import Callable, FunctionCallable, ReturnException
 from parser.grammar.statements import (
     ExpressionStatement,
     ForStatement,
     IfStatement,
+    ReturnStatement,
     Statement,
     Var,
     WhileStatement,
@@ -144,6 +145,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             self.env.define(name, item)
             self.exec(for_stmt.body)
         self.env.delete(name)
+
+    def visit_return_statement(self, return_stmt: ReturnStatement):
+        value = self.eval(return_stmt.expr)
+        raise ReturnException(value)
 
     def eval(self, expr: Expression) -> object:
         return expr.accept(self)

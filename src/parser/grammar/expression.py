@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from interpreter.interpreter import Interpreter
 from lexer.tokens import Token
 
 

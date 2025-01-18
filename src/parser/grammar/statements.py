@@ -46,6 +46,15 @@ class Function(Statement):
         return visitor.visit_function(self)
 
 
+class ReturnStatement(Statement):
+    def __init(self, keyword: Token, expr: Expression):
+        self.keyword = keyword
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_function(self)
+
+
 class IfStatement(Statement):
     def __init__(self, condition: Expression, then_stmt: Statement, else_stmt: Statement):
         self.condition = condition

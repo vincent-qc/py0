@@ -19,5 +19,9 @@ def run(source):
 #         if len(sys.argv) < 1:
 #             raise ValueError("No arguments passed")
 
-source = input()
+source = ""
+line = input()
+while len(line) > 0:
+    source += line + "\n"
+    line = input()
 run(source)

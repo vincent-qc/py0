@@ -11,12 +11,12 @@ class Environment:
     def define(self, name: Token, value: object):
         self.values[name.lexeme] = value
 
-    def assign(self, name: Token, value: object):
-        if name.lexeme in self.values:
-            self.values[name.lexeme] = value
+    def assign(self, name: str, value: object):
+        if name in self.values:
+            self.values[name] = value
         if self.enclosing is not None:
             return self.enclosing.assign(name, value)
-        raise RuntimeError(f"Variable {name.lexeme} not defined")
+        raise RuntimeError(f"Variable {name} not defined")
 
     def retrive(self, name: Token) -> object:
         if name.lexeme in self.values:

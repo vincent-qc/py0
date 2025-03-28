@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from parser.grammar.expression import Expression
-from typing import Any, List
+from typing import Any, List, Optional
 
 from lexer.tokens import Token
 
@@ -20,7 +20,7 @@ class ExpressionStatement(Statement):
 
 
 class Var(Statement):
-    def __init__(self, name: Token, initializer: Expression):
+    def __init__(self, name: Token, initializer: Optional[Expression] = None):
         self.name = name
         self.initializer = initializer
 
@@ -33,7 +33,7 @@ class Block(Statement):
         self.statements = statements
 
     def accept(self, visitor):
-        return visitor.visit_block(self)
+        return visitor.visit_block(self, None)
 
 
 class Function(Statement):
@@ -47,22 +47,22 @@ class Function(Statement):
 
 
 class ReturnStatement(Statement):
-    def __init(self, keyword: Token, expr: Expression):
+    def __init__(self, keyword: Token, expr: Optional[Expression] = None):
         self.keyword = keyword
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visit_function(self)
+        return visitor.visit_return_statement(self)
 
 
 class IfStatement(Statement):
-    def __init__(self, condition: Expression, then_stmt: Statement, else_stmt: Statement):
+    def __init__(self, condition: Expression, then_stmt: Statement, else_stmt: Optional[Statement] = None):
         self.condition = condition
         self.then_stmt = then_stmt
         self.else_stmt = else_stmt
 
     def accept(self, visitor):
-        return visitor.visit_if(self)
+        return visitor.visit_if_statement(self)
 
 
 class WhileStatement(Statement):
@@ -71,7 +71,7 @@ class WhileStatement(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_while(self)
+        return visitor.visit_while_statement(self)
 
 
 class ForStatement(Statement):
@@ -81,4 +81,4 @@ class ForStatement(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_for()
+        return visitor.visit_for_statement(self)

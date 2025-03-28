@@ -9,7 +9,7 @@ BOTH = [TokenType.PLUS, TokenType.GREATER,
 
 def typecheck_number(*args: object):
     for arg in args:
-        if not isinstance(arg, float) and not isinstance(arg, int):
+        if not (isinstance(arg, float) or isinstance(arg, int)) and not isinstance(arg, int):
             return False
     return True
 

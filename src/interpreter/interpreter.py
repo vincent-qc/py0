@@ -1,5 +1,6 @@
 from parser.environment import Environment
 from parser.grammar.expression import (
+    Array,
     Assignment,
     Binary,
     Call,
@@ -42,23 +43,26 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         return literal.value
 
     def visit_grouping(self, grouping: Grouping) -> object:
-        return self.eval(grouping)
+        return self.eval(grouping.expr)
 
     def visit_unary(self, unary: Unary) -> object:
         right = self.eval(unary.right)
         if unary.op.type == TokenType.BANG:
             return not bool(right)
         elif unary.op.type == TokenType.MINUS:
-            return -1 * float(right)
+            return -1 * (right)
+
+    def visit_array(self, array: Array):
+        return [self.eval(expr) for expr in array.elements]
 
     def visit_call(self, call: Call) -> object:
         callee = self.eval(call.callee)
         args = []
         for arg in call.args:
             args.append(self.eval(arg))
-        if not isinstance(Callable, callee):
+        if not isinstance(callee, Callable):
             error(call.paren.line, "Can only invoke functions or classes")
-        func = Callable(callee)
+        func = callee
         if len(args) != func.arity():
             error(call.paren.line,
                   f"Expected {func.arity()} arguments but received {len(args)}.")
@@ -68,7 +72,7 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         op = binary.op
         left = self.eval(binary.left)
         right = self.eval(binary.right)
-        typecheck(op, right, left)
+        typecheck(op, left, right)
         if op.type == TokenType.PLUS:
             return left + right
         elif op.type == TokenType.MINUS:
@@ -104,25 +108,31 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_assignment(self, assignment: Assignment):
         value = self.eval(assignment.value)
-        self.env.assign(assignment.name, value)
+        print("assign")
+        self.env.assign(assignment.name.lexeme, value)
+        return value
 
     def visit_variable(self, variable: Variable):
         return self.env.retrive(variable.name)
 
     def visit_expression_statement(self, expression_stmt: ExpressionStatement):
-        self.exec(expression_stmt)
+        return self.eval(expression_stmt.expr)
 
     def visit_var(self, var: Var):
-        value = self.eval(var.initializer)
-        self.env.define(var.name, value)
+        value = None
+        if var.initializer is not None:
+            value = self.eval(var.initializer)
+        self.env.define(var.name.lexeme, value)
 
     def visit_block(self, block, new_env=None):
         new_env = Environment(self.env) if new_env is None else new_env
         old_env = self.env
         self.env = new_env
-        for statement in block.statements:
-            self.exec(statement)
-        self.env = old_env
+        try:
+            for statement in block.statements:
+                self.exec(statement)
+        finally:
+            self.env = old_env
 
     def visit_function(self, function):
         callable = FunctionCallable(function)
@@ -135,19 +145,25 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
             self.exec(if_stmt.else_stmt)
 
     def visit_while_statement(self, while_stmt: WhileStatement):
-        while while_stmt.condition:
+        while bool(self.eval(while_stmt.condition)):
             self.exec(while_stmt.body)
 
     def visit_for_statement(self, for_stmt: ForStatement):
-        name = for_stmt.name
         iterator = self.eval(for_stmt.iterator)
         for item in iterator:
-            self.env.define(name, item)
-            self.exec(for_stmt.body)
-        self.env.delete(name)
+            env = Environment(self.env)
+            env.define(for_stmt.name.lexeme, item)
+            old_env = self.env
+            self.env = env
+            try:
+                self.exec(for_stmt.body)
+            finally:
+                self.env = old_env
 
     def visit_return_statement(self, return_stmt: ReturnStatement):
-        value = self.eval(return_stmt.expr)
+        value = None
+        if return_stmt.expr is not None:
+            value = self.eval(return_stmt.expr)
         raise ReturnException(value)
 
     def eval(self, expr: Expression) -> object:

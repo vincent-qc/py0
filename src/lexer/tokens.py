@@ -10,7 +10,6 @@ class TokenType(Enum):
     RIGHT_SQUARE = "]"
     COMMA = ","
     DOT = "."
-    SEMICOLON = ";"
     COLON = ":"
     PLUS = "+"
     MINUS = "-"
@@ -30,6 +29,7 @@ class TokenType(Enum):
 
     INDENT = "_INDENT"
     UNDENT = "_UNDENT"
+    EOL = "_EOL"
 
     IDENTIFIER = "_IDENTIFIER"  # remove these
     STRING = "_STRING"
@@ -71,7 +71,7 @@ class Token:
         return f"{self.type.value} {self.lexeme} {self.literal}"
 
 
-SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ';', ':',
+SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ':',
           '+', '-', '*', '/', '%', '=', '>', '<', '!']
 
 TYPES = ["str", "int", "float", "bool", "List", "None"]

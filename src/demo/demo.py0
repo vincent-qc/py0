@@ -1,0 +1,23 @@
+m = parse_int(input());
+n = parse_int(input());
+k = parse_int(input());
+
+let row_colored = mul([false], add(m, 1));
+let col_colored = mul([false], add(n, 1));
+
+for (let _ in range(k)) {
+	let data = input().split();
+	let type = data[0];
+	let pos = parse_int(data[1]);
+	if (eq(type, "R")) { row_colored[pos] = not(row_colored[pos]); }
+	else { col_colored[pos] = not(col_colored[pos]); }
+}
+
+let colored_rows = row_colored.count(true);
+let colored_cols = col_colored.count(true);
+
+let a = mul(colored_rows, n);
+let b = mul(colored_cols, m);
+let c = mul(2, mul(colored_rows, colored_cols));
+
+print(sub(add(a, b), c));

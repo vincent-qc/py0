@@ -5,6 +5,8 @@ from typing import List
 
 # from interpreter.interpreter import Interpreter
 
+# from interpreter.interpreter import Interpreter
+
 
 class ReturnException (Exception):
     def __init__(self, value):
@@ -27,7 +29,7 @@ class FunctionCallable(Callable):
     def call(self, interpreter, args):
         environment = Environment(interpreter.env)
         for parameter, arg in zip(self.function.parameters, args):
-            environment.define(parameter, arg)
+            environment.define(parameter.lexeme, arg)
         try:
             interpreter.visit_block(self.function.body, environment)
         except ReturnException as e:

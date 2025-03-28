@@ -55,7 +55,7 @@ class Lexer:
                 res += self.peek()
                 self.advance()
         self.advance(-1)
-        return Token(TokenType.NUMBER, res, float(res), self.line)
+        return Token(TokenType.NUMBER, res, int(res), self.line)
 
     def lex_identifier(self) -> Token:
         res = ""
@@ -75,12 +75,13 @@ class Lexer:
 
             # Skip the entire line after comments
             if cur == '#':
-                while not self.end_of_source and self.peek() != '\n':
+                while not self.end_of_source() and self.peek() != '\n':
                     self.advance()
                 self.line += 1
 
             # Increase line count on newline
             elif cur == '\n':
+                tokens.append(Token(TokenType.EOL, "\\n", None, self.line))
                 self.line += 1
 
             # Check for syntactical lexemes

@@ -8,13 +8,16 @@ class Environment:
         self.enclosing = enclosing
         self.values = {}
 
-    def define(self, name: Token, value: object):
-        self.values[name.lexeme] = value
+    def define(self, name: str, value: object):
+        self.values[name] = value
 
     def assign(self, name: str, value: object):
+        # Fix the assignment logic to properly update variables in the current scope
         if name in self.values:
             self.values[name] = value
-        if self.enclosing is not None:
+            return value  # Return the value to indicate success
+        elif self.enclosing is not None:
+            # Pass up to parent scope
             return self.enclosing.assign(name, value)
         raise RuntimeError(f"Variable {name} not defined")
 

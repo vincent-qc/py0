@@ -1,0 +1,23 @@
+#!/bin/bash
+# filepath: /Users/vincentqi/Developer/GitHub/py0/py0
+
+# Use the specific Python interpreter from Homebrew
+PYTHON_INTERPRETER="/opt/homebrew/bin/python3"
+
+# Path to the py0 interpreter script
+PY0_SCRIPT="/Users/vincentqi/Developer/GitHub/py0/src/py0.py"
+
+# Make sure the Python interpreter exists
+if [ ! -f "$PYTHON_INTERPRETER" ]; then
+    echo "Error: Python interpreter not found at $PYTHON_INTERPRETER"
+    exit 1
+fi
+
+# Make sure the py0 script exists
+if [ ! -f "$PY0_SCRIPT" ]; then
+    echo "Error: py0 script not found at $PY0_SCRIPT"
+    exit 1
+fi
+
+# Run the interpreter with all arguments passed to this script
+"$PYTHON_INTERPRETER" "$PY0_SCRIPT" "$@"

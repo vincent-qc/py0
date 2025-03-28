@@ -31,11 +31,11 @@ def solve() {
     }
   }
 
-  print(
+  return (
     (colored_rows * n) +
     (colored_cols * m) -
     (2 * colored_rows * colored_cols)
   );
 }
 
-solve();
+print(solve());

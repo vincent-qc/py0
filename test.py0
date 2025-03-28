@@ -1,6 +1,0 @@
-for i in arr:
-  print(i)
-
-counter = 0
-while counter < len(arr):
-  

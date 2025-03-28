@@ -78,6 +78,33 @@ class NativeParseFloat(Callable):
         return 1
 
 
+class NativeAssert(Callable):
+    def call(self, interpreter, args):
+        if not args[0]:
+            raise AssertionError(args[1])
+
+    def arity(self):
+        return 2
+
+
+class NativeRequires(Callable):
+    def call(self, interpreter, args):
+        if not args[0]:
+            raise Exception(args[1])
+
+    def arity(self):
+        return 2
+
+
+class NativeEnsures(Callable):
+    def call(self, interpreter, args):
+        if not args[0]:
+            raise Exception(args[1])
+
+    def arity(self):
+        return 2
+
+
 def define_natives(env: Environment):
     env.define("print", NativePrint())
     env.define("len", NativeLen())
@@ -88,3 +115,6 @@ def define_natives(env: Environment):
     env.define("parse_int", NativeParseInt())
     env.define("parse_float", NativeParseFloat())
     env.define("split", NativeSplit())
+    env.define("assert", NativeAssert())
+    env.define("requires", NativeRequires())
+    env.define("ensures", NativeEnsures())

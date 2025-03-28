@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import argparse
 import os
 import sys
 from parser.parser import Parser
@@ -18,22 +21,51 @@ def run(source):
 
 
 def main():
-    # Check if a filename was provided as a command-line argument
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        description="Py0 - A simplified Python-like language interpreter",
+        epilog="For more information, visit https://github.com/vincent-qc/py0"
+    )
+
+    parser.add_argument(
+        "file",
+        nargs="?",
+        help="Path to the .py0 file to execute"
+    )
+
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Enable verbose output during execution"
+    )
+
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="Py0 v0.1.0",
+    )
+
+    args = parser.parse_args()
+
+    if args.file:
+        filename = args.file
     else:
-        # Default to a file in the demo directory
-        filename = os.path.join(os.path.dirname(__file__), "demo", "demo.py0")
+        print("Error: No file provided. Use -h for help.")
+        sys.exit(1)
 
     try:
-        # Read the file content
+        if not os.path.isfile(filename):
+            raise FileNotFoundError(f"The file '{filename}' does not exist.")
+
+        if not filename.endswith(".py0"):
+            print(f"Warning: '{filename}' doesn't have a .py0 extension.")
+
         with open(filename, "r") as file:
             source = file.read()
 
-        # Run the file content
         run(source)
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
         sys.exit(1)
     except Exception as e:
         print(f"Error: {e}")

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from lexer.tokens import Token
+from lexer.tokens import Token, TokenType
 
 
 class Expression(ABC):
@@ -63,6 +63,16 @@ class Array(Expression):
         return visitor.visit_array(self)
 
 
+class ArrayAccess(Expression):
+    def __init__(self, array: Expression, bracket: Token, index: Expression):
+        self.array = array
+        self.bracket = bracket
+        self.index = index
+
+    def accept(self, visitor):
+        return visitor.visit_array_access(self)
+
+
 class Call(Expression):
     def __init__(self, callee: Expression, paren: Token, args: List[Expression]):
         self.callee = callee
@@ -74,9 +84,11 @@ class Call(Expression):
 
 
 class Assignment(Expression):
-    def __init__(self, name: Token, value: Expression):
-        self.name = name
+    def __init__(self, target, value: Expression, operator=TokenType.EQUAL):
+        # target can now be either Token (for variables) or ArrayAccess (for array elements)
+        self.target = target
         self.value = value
+        self.operator = operator  # Store the operator type
 
     def accept(self, visitor):
         return visitor.visit_assignment(self)

@@ -20,16 +20,22 @@ class Lexer:
         next = self.peek(1)
         if cur == '=' and next == '=':
             self.advance()
-            return Token(TokenType.EQUAL_EQUAL, cur, None, self.line)
+            return Token(TokenType.EQUAL_EQUAL, "==", None, self.line)
+        if cur == '+' and next == '=':
+            self.advance()
+            return Token(TokenType.PLUS_EQUAL, "+=", None, self.line)
+        if cur == '-' and next == '=':
+            self.advance()
+            return Token(TokenType.MINUS_EQUAL, "-=", None, self.line)
         if cur == '>' and next == '=':
             self.advance()
-            return Token(TokenType.GREATER_EQUAL, cur, None, self.line)
+            return Token(TokenType.GREATER_EQUAL, ">=", None, self.line)
         if cur == '<' and next == '=':
             self.advance()
-            return Token(TokenType.LESS_EQUAL, cur, None, self.line)
+            return Token(TokenType.LESS_EQUAL, "<=", None, self.line)
         if cur == '!' and next == '=':
             self.advance()
-            return Token(TokenType.BANG_EQUAL, cur, None, self.line)
+            return Token(TokenType.BANG_EQUAL, "!=", None, self.line)
         return Token(TokenType(cur), cur, None, self.line)
 
     def lex_string(self) -> Token:
@@ -79,9 +85,8 @@ class Lexer:
                     self.advance()
                 self.line += 1
 
-            # Increase line count on newline
+            # Skip newlines, but increase line count
             elif cur == '\n':
-                tokens.append(Token(TokenType.EOL, "\\n", None, self.line))
                 self.line += 1
 
             # Check for syntactical lexemes

@@ -1,23 +1,41 @@
-m = parse_int(input());
-n = parse_int(input());
-k = parse_int(input());
+def solve() {
+  m = input_int();
+  n = input_int();
+  k = input_int();
 
-let row_colored = mul([false], add(m, 1));
-let col_colored = mul([false], add(n, 1));
+  row_colored = [False] * m;
+  col_colored = [False] * n;
 
-for (let _ in range(k)) {
-	let data = input().split();
-	let type = data[0];
-	let pos = parse_int(data[1]);
-	if (eq(type, "R")) { row_colored[pos] = not(row_colored[pos]); }
-	else { col_colored[pos] = not(col_colored[pos]); }
+  for _ in range(0,k) {
+    data = split(input(), ' ');
+    type = data[0];
+    pos = parse_int(data[1]) - 1;
+    if type == "R" {
+      row_colored[pos] = !row_colored[pos];
+    } else {
+      col_colored[pos] = !col_colored[pos];
+    }
+  }
+
+  colored_rows = 0;
+  for i in range(0,m) {
+    if row_colored[i] {
+      colored_rows += 1;
+    }
+  }
+
+  colored_cols = 0;
+  for i in range(0,n) {
+    if col_colored[i] {
+      colored_cols += 1;
+    }
+  }
+
+  print(
+    (colored_rows * n) +
+    (colored_cols * m) -
+    (2 * colored_rows * colored_cols)
+  );
 }
 
-let colored_rows = row_colored.count(true);
-let colored_cols = col_colored.count(true);
-
-let a = mul(colored_rows, n);
-let b = mul(colored_cols, m);
-let c = mul(2, mul(colored_rows, colored_cols));
-
-print(sub(add(a, b), c));
+solve();

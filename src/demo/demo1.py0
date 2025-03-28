@@ -1,0 +1,37 @@
+m = input_int()
+n = input_int()
+k = input_int()
+
+row_colored = [False] * m
+col_colored = [False] * n
+
+for _ in range(k) {
+	data = split(input(), '')
+	type = data[0]
+	pos = parse_int(data[1])
+	if type == "R" {
+    row_colored[pos] = !row_colored[pos];
+  } else {
+    col_colored[pos] = !col_colored[pos];
+  }
+}
+
+colored_rows = 0;
+for i in range(n) {
+  if row_colored[i] {
+    colored_rows = colored_rows + 1;
+  }
+}
+
+colored_cols = 0;
+for i in range(m) {
+  if col_colored[i] {
+    colored_cols = colored_cols + 1
+  }
+}
+
+print(
+  (colored_rows * n) +
+  (colored_cols * m) -
+  (2 * colored_rows * colored_cols)
+);

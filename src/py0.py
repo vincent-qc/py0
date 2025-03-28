@@ -10,8 +10,6 @@ def run(source):
     lexer = Lexer(source)
     tokens = lexer.scan()
 
-    print("Tokens:", [token.lexeme for token in tokens])
-
     parser = Parser(tokens)
     statements = parser.parse()
 

@@ -11,15 +11,21 @@ class TokenType(Enum):
     COMMA = ","
     DOT = "."
     COLON = ":"
+    SEMICOLON = ";"
     PLUS = "+"
     MINUS = "-"
     STAR = "*"
     SLASH = "/"
     MOD = "%"
     HASHTAG = "#"
+    AMPERSAND = "&"
+    PIPE = "|"
+    XOR = "^"
 
     EQUAL = "="
     EQUAL_EQUAL = "=="
+    PLUS_EQUAL = "+="
+    MINUS_EQUAL = "-="
     BANG = "!"
     BANG_EQUAL = "!="
     GREATER = ">"
@@ -29,7 +35,6 @@ class TokenType(Enum):
 
     INDENT = "_INDENT"
     UNDENT = "_UNDENT"
-    EOL = "_EOL"
 
     IDENTIFIER = "_IDENTIFIER"  # remove these
     STRING = "_STRING"
@@ -72,7 +77,8 @@ class Token:
 
 
 SYNTAX = ['(', ')', '{', '}', '[', ']', '.', ',', ':',
-          '+', '-', '*', '/', '%', '=', '>', '<', '!']
+          '+', '-', '*', '/', '%', '=', '>', '<', '!',
+          '&', '|', '^', ';']
 
 TYPES = ["str", "int", "float", "bool", "List", "None"]
 

@@ -1,5 +1,6 @@
 from parser.grammar.expression import (
     Array,
+    ArrayAccess,
     Assignment,
     Binary,
     Call,
@@ -21,7 +22,7 @@ from parser.grammar.statements import (
     Var,
     WhileStatement,
 )
-from typing import Any, List
+from typing import List
 
 from lexer.tokens import SYNCHRONIZATION, Token, TokenType
 
@@ -34,7 +35,6 @@ class Parser():
     def parse(self) -> List[Statement]:
         statements = []
         while not self.end_of_tokens():
-            self.skip_newlines()  # Skip any leading newlines
             if not self.end_of_tokens():
                 stmt = self.decleration()
                 if stmt is not None:
@@ -43,23 +43,11 @@ class Parser():
         return statements
 
     def peek(self, offset=0):
-        # Skip EOLs only for lookahead, not for the current token
-        if offset > 0:
-            actual_offset = offset
-            i = self.index + 1
-            while i < len(self.tokens) and actual_offset > 0:
-                if self.tokens[i].type != TokenType.EOL:
-                    actual_offset -= 1
-                if actual_offset == 0:
-                    return self.tokens[i]
-                i += 1
-            return self.tokens[min(self.index + offset, len(self.tokens) - 1)]
-        return self.tokens[self.index]
-
-    def skip_newlines(self):
-        """Skip any EOL tokens at the current position."""
-        while not self.end_of_tokens() and self.tokens[self.index].type == TokenType.EOL:
-            self.index += 1
+        # Simple peek with bounds checking
+        idx = self.index + offset
+        if idx >= len(self.tokens):
+            idx = len(self.tokens) - 1
+        return self.tokens[idx]
 
     def consume(self) -> Token:
         token = self.peek()
@@ -82,15 +70,21 @@ class Parser():
 
     def decleration(self) -> Statement:
         try:
+            # First check if it's a function declaration
             if self.match(TokenType.DEF):
                 return self.function_decleration()
-            # Fix the check for variable declarations
-            if self.match(TokenType.IDENTIFIER) and self.peek(1).type == TokenType.EQUAL:
-                return self.var_decleration()
+
+            # Then check if it's a variable declaration
+            if self.match(TokenType.IDENTIFIER):
+                # Only peek at the next token if we're not at the end
+                if not self.end_of_tokens() and self.peek(1).type == TokenType.EQUAL:
+                    return self.var_decleration()
+
+            # Otherwise, it's a regular statement
             return self.statement()
         except RuntimeError as e:
             print(e)
-            print("SYNCHRONIZING")
+            # print("SYNCHRONIZING")
             self.synchronize()
             return None  # Return None on error
 
@@ -114,8 +108,7 @@ class Parser():
         name = self.consume()
         self.expect(TokenType.EQUAL, "Variable not declared.")
         initalizer = self.expression()
-        self.expect_end(
-            "Expected end of statement after variable declaration.")
+        self.expect(TokenType.SEMICOLON, "Expected semicolon.")
         return Var(name, initalizer)
 
     def statement(self) -> Statement:
@@ -168,14 +161,14 @@ class Parser():
     def return_statement(self) -> Statement:
         token = self.consume()  # get rid of return
         expr = None
-        if not self.is_at_end_of_statement():
+        if not self.match(TokenType.SEMICOLON):
             expr = self.expression()
-        self.expect_end("Expected end of statement after return.")
+        self.expect(TokenType.SEMICOLON, "Expected semicolon after return.")
         return ReturnStatement(token, expr)
 
     def expression_statement(self) -> Statement:
         expr = self.expression()
-        self.expect_end("Expected end of statement.")
+        self.expect(TokenType.SEMICOLON, "Expected semicolon.")
         return ExpressionStatement(expr)
 
     def expression(self) -> Expression:
@@ -183,12 +176,18 @@ class Parser():
 
     def assignment(self) -> Expression:
         expr = self.logical_or()
-        if self.match(TokenType.EQUAL):
-            self.consume()  # get rid of equals
-            value = self.equality()  # a = b = 0 should not be legal
+        if self.match(TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL):
+            op = self.consume()  # get the operator
+            value = self.equality()  # a += b += 0 should not be legal
+
+            # Check if we're assigning to a variable
             if isinstance(expr, Variable):
                 name = expr.name
-                return Assignment(name, value)
+                return Assignment(name, value, op.type)
+            # Check if we're assigning to an array element
+            elif isinstance(expr, ArrayAccess):
+                return Assignment(expr, value, op.type)
+
             raise RuntimeError("Invalid assignment target")
         return expr
 
@@ -226,7 +225,7 @@ class Parser():
 
     def term(self) -> Expression:
         expr = self.factor()
-        while self.match(TokenType.PLUS, TokenType.MINUS):
+        while self.match(TokenType.PLUS, TokenType.MINUS, TokenType.XOR, TokenType.AMPERSAND, TokenType.PIPE):
             op = self.consume()
             right = self.term()
             expr = Binary(expr, op, right)
@@ -245,7 +244,17 @@ class Parser():
             op = self.consume()
             expr = self.unary()
             return Unary(op, expr)
-        return self.call()
+        return self.array_access()
+
+    def array_access(self) -> Expression:
+        expr = self.call()
+        while self.match(TokenType.LEFT_SQUARE):
+            self.consume()
+            index = self.expression()
+            bracket = self.expect(TokenType.RIGHT_SQUARE,
+                                  "Unclosed square bracket.")
+            expr = ArrayAccess(expr, bracket, index)
+        return expr
 
     def call(self) -> Expression:
         expr = self.primary()
@@ -294,17 +303,13 @@ class Parser():
             self.expect(TokenType.RIGHT_SQUARE, "Unclosed square bracket.")
             return Array(elements)
 
-        if self.match(TokenType.EOL):
-            self.consume()  # Skip EOLs in expression context
-            return self.primary()  # Try again for the real primary
-
-        raise RuntimeError("Expected expression.")
+        raise RuntimeError(f"Expected expression. Got '{self.peek().lexeme}'.")
 
     def synchronize(self):
         """Synchronize after an error by advancing to the next statement."""
         while not self.end_of_tokens():
-            # If we reach an EOL, we've reached the end of the current statement
-            if self.match(TokenType.EOL):
+            # If we reach a semicolon, we've reached the end of the current statement
+            if self.match(TokenType.SEMICOLON):
                 self.consume()
                 return
 
@@ -316,20 +321,6 @@ class Parser():
 
     def end_of_tokens(self) -> bool:
         return self.index >= len(self.tokens) or self.tokens[self.index].type == TokenType.EOF
-
-    def is_at_end_of_statement(self) -> bool:
-        """Check if we're at the end of a statement (EOL or EOF)."""
-        return self.match(TokenType.EOL) or self.match(TokenType.EOF)
-
-    def expect_end(self, message: str) -> None:
-        """Expect the end of a statement (EOL or EOF)."""
-        if self.match(TokenType.EOL):
-            self.consume()  # Consume the EOL token
-        elif self.match(TokenType.EOF):
-            # Don't consume EOF - we need it to terminate the parse loop
-            pass
-        else:
-            raise RuntimeError(f"{message} Got '{self.peek().lexeme}'.")
 
     def print_ast(self, statements: List[Statement], indent: int = 0) -> None:
         """Print the AST in a readable format with proper indentation."""

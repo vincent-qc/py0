@@ -1,6 +1,7 @@
 from parser.environment import Environment
 from parser.grammar.expression import (
     Array,
+    ArrayAccess,
     Assignment,
     Binary,
     Call,
@@ -25,7 +26,7 @@ from typing import List
 
 from interpreter.natives import define_natives
 from interpreter.typecheck import checkzero, typecheck
-from lexer.tokens import TokenType
+from lexer.tokens import Token, TokenType
 from util.errors import error
 from util.visitor import ExpressionVisitor, StatementVisitor
 
@@ -54,6 +55,17 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_array(self, array: Array):
         return [self.eval(expr) for expr in array.elements]
+
+    def visit_array_access(self, array_access: ArrayAccess):
+        array = self.eval(array_access.array)
+        index = self.eval(array_access.index)
+        if not isinstance(array, list):
+            error(array_access.bracket.line, "Array access on non-array")
+        if not isinstance(index, int):
+            error(array_access.bracket.line, "Array index must be an integer")
+        if index < 0 or index >= len(array):
+            error(array_access.bracket.line, "Array index out of bounds")
+        return array[index]
 
     def visit_call(self, call: Call) -> object:
         callee = self.eval(call.callee)
@@ -85,6 +97,12 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         elif op.type == TokenType.MOD:
             checkzero(op, right)
             return left % right
+        elif op.type == TokenType.AMPERSAND:
+            return left & right
+        elif op.type == TokenType.PIPE:
+            return left | right
+        elif op.type == TokenType.XOR:
+            return left ^ right
         elif op.type == TokenType.GREATER:
             return left > right
         elif op.type == TokenType.GREATER_EQUAL:
@@ -108,8 +126,53 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
 
     def visit_assignment(self, assignment: Assignment):
         value = self.eval(assignment.value)
-        print("assign")
-        self.env.assign(assignment.name.lexeme, value)
+
+        # Handle compound assignment for variables
+        if isinstance(assignment.target, Token):
+            if assignment.operator == TokenType.PLUS_EQUAL:
+                # Get the current value
+                current_value = self.env.retrive(assignment.target)
+                # Add the new value
+                value = current_value + value
+            elif assignment.operator == TokenType.MINUS_EQUAL:
+                # Get the current value
+                current_value = self.env.retrive(assignment.target)
+                # Subtract the new value
+                value = current_value - value
+
+            # Assign the final value
+            self.env.assign(assignment.target.lexeme, value)
+
+        # Handle compound assignment for array elements
+        elif isinstance(assignment.target, ArrayAccess):
+            array = self.eval(assignment.target.array)
+            index = self.eval(assignment.target.index)
+
+            if not isinstance(array, list):
+                error(assignment.target.bracket.line,
+                      "Cannot assign to non-array")
+            if not isinstance(index, int):
+                error(assignment.target.bracket.line,
+                      "Array index must be an integer")
+            if index < 0 or index >= len(array):
+                error(assignment.target.bracket.line,
+                      "Array index out of bounds")
+
+            if assignment.operator == TokenType.PLUS_EQUAL:
+                # Get the current value
+                current_value = array[index]
+                # Add the new value
+                value = current_value + value
+            elif assignment.operator == TokenType.MINUS_EQUAL:
+                # Get the current value
+                current_value = array[index]
+                # Subtract the new value
+                value = current_value - value
+
+            array[index] = value
+        else:
+            error(0, "Invalid assignment target")
+
         return value
 
     def visit_variable(self, variable: Variable):
@@ -122,7 +185,10 @@ class Interpreter(ExpressionVisitor, StatementVisitor):
         value = None
         if var.initializer is not None:
             value = self.eval(var.initializer)
-        self.env.define(var.name.lexeme, value)
+        try:
+            self.env.assign(var.name.lexeme, value)
+        except RuntimeError:
+            self.env.define(var.name.lexeme, value)
 
     def visit_block(self, block, new_env=None):
         new_env = Environment(self.env) if new_env is None else new_env
